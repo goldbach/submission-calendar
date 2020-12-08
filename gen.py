@@ -20,20 +20,20 @@ def cal2month(week_str):
     return arr
 
 
-q4_445 = cal2month("445445445445")
-q4_446 = cal2month("445445445446")
-q4_455 = cal2month("445445445455")
+q4_445 = cal2month("445445445445")  # standard 52 week year
+q4_446 = cal2month("445445445446")  # 53 week year - 6 weeks in dec
+q4_455 = cal2month("445445445455")  # 53 week year - 5 weeks in nov & dec
 
 
 calendarsbyyear = defaultdict(lambda: q4_445)  # default 52 weeks
 calendarsbyyear.update({
-    1992: q4_455,
+    1992: q4_455,  # all of these are 53 week years
     1998: q4_455,
     2004: q4_446,
     2009: q4_455,
     2015: q4_455,
     2020: q4_455,
-    2026: q4_455,
+    2026: q4_455,  # this is not settled yet
     # 2032: ??,
 })
 
