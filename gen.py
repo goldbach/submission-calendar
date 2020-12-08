@@ -4,62 +4,54 @@
 # 1990-01-03,1990,199001,199001
 
 import datetime as dt
-import itertools
 from dateutil.rrule import rrule, DAILY
+from collections import defaultdict
 
-first = dt.datetime.strptime("1990-01-01", '%Y-%m-%d')
-last = dt.datetime.strptime("2029-12-31", '%Y-%m-%d')
+first = dt.date(1990, 1, 1)
+last = dt.date(2029, 12, 31)
 
 
+def cal2month(week_str):
+    # translate above into week index array -> month
+    arr = []
+    for month, elem in enumerate(map(int, week_str), start=1):
+        for _ in range(elem):
+            arr.append(month)
+    return arr
 
-months52weeks = [
-    [1] * 4,
-    [2] * 4,
-    [3] * 5,
-    [4] * 4,
-    [5] * 4,
-    [6] * 5,
-    [7] * 4,
-    [8] * 4,
-    [9] * 5,
-    [10] * 4,
-    [11] * 4,
-    [12] * 5,
-]
-months53weeks = [
-    [1] * 4,
-    [2] * 4,
-    [3] * 5,
-    [4] * 4,
-    [5] * 4,
-    [6] * 5,
-    [7] * 4,
-    [8] * 4,
-    [9] * 5,
-    [10] * 4,
-    [11] * 5,
-    [12] * 5,
-]
-months52weeks = list(itertools.chain(*months52weeks))
-months53weeks = list(itertools.chain(*months53weeks))
+
+q4_445 = cal2month("445445445445")
+q4_446 = cal2month("445445445446")
+q4_455 = cal2month("445445445455")
+
+
+calendarsbyyear = defaultdict(lambda: q4_445)  # default 52 weeks
+calendarsbyyear.update({
+    1992: q4_455,
+    1998: q4_455,
+    2004: q4_446,
+    2009: q4_455,
+    2015: q4_455,
+    2020: q4_455,
+    2026: q4_455,
+    # 2032: ??,
+})
+
 
 print("CALENDARDAY,CALENDARYEAR,CALENDARWEEK,PLANNINGMONTH")
 for day in rrule(DAILY, dtstart=first, until=last):
 
     date_year = day.strftime("%Y")
     date_month = day.strftime("%m")
-
+    date = day.strftime("%Y-%m-%d")
     # years from weeks are different from years from date
     # as week 01 is sometimes in prev year, also
     # w53 in next
     week_year, week_week, week_day = day.isocalendar()
 
-    # Jan 4th is always week one. With same logic
-    # Dec 28th is always the last week (52 or 53)
-    # note it is based on week_year not date_year
-    last_week = (dt.date(int(week_year), 12, 28)).isocalendar()[1]
-    if last_week == 53:
-        months = months53weeks
-    else:
-        months = months52weeks
-    print(f'{day.strftime("%Y-%m-%d")},{date_year},{week_year}{week_week:02d},{week_year}{months[week_week-1]:02d}')
+    months = calendarsbyyear[week_year]
+    try:
+        print(f'{date},{date_year},{week_year}{week_week:02d},{week_year}{months[week_week-1]:02d}')
+    except IndexError:
+        print(f"{week_year} is a w53 year -- please add Q4 weeks to config")
+        raise
